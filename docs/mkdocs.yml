@@ -1,0 +1,69 @@
+site_name: Secure Token Documentation
+site_description: A secure token management system for Python applications
+site_author: Amirhosein
+repo_url: https://github.com/amirhosein2004/secure-token
+repo_name: amirhosein2004/secure-token
+
+# Use current directory as docs source
+docs_dir: '.'
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.tabs.link
+
+nav:
+  - Home: index.md
+  - Tutorial: tutorial-guide.md
+  - Development Setup: development-setup.md
+  - API Reference: api-reference.md
+  - Advanced Examples: advanced-examples.md
+  - Testing: testing-guide.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - mkdocstrings
+  - mike:
+      version_selector: true
+      css_dir: css
+      javascript_dir: js
+
+extra:
+  version:
+    provider: mike
+    default: stable
