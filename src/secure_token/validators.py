@@ -31,12 +31,12 @@ def validate_permissions(permissions: List[str]) -> bool:
     
     return True
 
-def validate_expires_hours(hours: int) -> bool:
+def validate_expires_hours(hours) -> bool:
     """Validate expires hours"""
-    if not isinstance(hours, int):
-        raise TokenError("Expires hours must be an integer")
+    if not isinstance(hours, (int, float)):
+        raise TokenError("Expires hours must be a number")
     
-    if hours < 1 or hours > 8760:  # maximum one year
-        raise TokenError("Expires hours must be between 1 and 8760 hours")
+    if hours <= 0 or hours > 8760:  # maximum one year
+        raise TokenError("Expires hours must be between 0 and 8760 hours")
     
     return True

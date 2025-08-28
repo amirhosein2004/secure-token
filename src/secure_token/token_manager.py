@@ -25,10 +25,10 @@ from .exceptions import (
     InvalidTokenError, PermissionDeniedError
 )
 from .validators import validate_user_id, validate_expires_hours, validate_permissions
-
+from src import config
 
 # logging configuration
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=config.LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 
@@ -40,7 +40,7 @@ class SecureTokenManager:
     using powerful encryption algorithms.
     """
     
-    def __init__(self, secret_key: Optional[str] = None, salt: Optional[bytes] = None):
+    def __init__(self):
         """
         Initialize the token manager
         
@@ -53,17 +53,14 @@ class SecureTokenManager:
         """
         try:
             # set secret key
-            if secret_key:
-                self.secret_key = secret_key.encode('utf-8')
+            if config.SECRET_KEY:
+                self.secret_key = config.SECRET_KEY.encode('utf-8')
             else:
                 self.secret_key = secrets.token_bytes(32)
-                logger.info("Random secret key generated")
+                logger.warning("SECRET_KEY not found in environment variables. Using a random key.")
             
             # set salt
-            if salt:
-                self.salt = salt
-            else:
-                self.salt = b'secure_token_salt_2024'  
+            self.salt = config.SALT  
             
             # setup encryption system
             self._setup_encryption()
@@ -112,9 +109,8 @@ class SecureTokenManager:
     def generate_token(self, 
                       user_id: str, 
                       permissions: Optional[List[str]] = None,
-                      expires_in_hours: int = 24,
-                      additional_data: Optional[Dict[str, Any]] = None,
-                      max_tokens_per_user: int = 10) -> str:
+                      expires_in_hours: int = None,
+                      additional_data: Optional[Dict[str, Any]] = None) -> str:
         """
         Generate a new secure token
         
@@ -123,7 +119,6 @@ class SecureTokenManager:
             permissions: User permissions list
             expires_in_hours: Token expiration time in hours
             additional_data: Additional data to save in the token
-            max_tokens_per_user: Maximum number of active tokens per user
         
         Returns:
             str: Encrypted token
@@ -137,6 +132,10 @@ class SecureTokenManager:
             >>> print(len(token) > 0)  # True
         """
         try:
+            # set default expiration if not provided
+            if expires_in_hours is None:
+                expires_in_hours = config.DEFAULT_EXPIRATION_HOURS
+                
             # validate inputs
             validate_user_id(user_id)
             validate_expires_hours(expires_in_hours)
@@ -157,8 +156,8 @@ class SecureTokenManager:
                     token_info['expires_at'] > datetime.now())
             ]
             
-            if len(user_active_tokens) >= max_tokens_per_user:
-                raise PermissionDeniedError(f"Maximum {max_tokens_per_user} active tokens allowed")
+            if len(user_active_tokens) >= config.MAX_TOKENS_PER_USER:
+                raise PermissionDeniedError(f"Maximum {config.MAX_TOKENS_PER_USER} active tokens allowed")
             
             # generate unique token id
             token_id = secrets.token_urlsafe(24)
@@ -331,7 +330,7 @@ class SecureTokenManager:
             logger.error(f"Error revoking token: {e}")
             raise TokenError(f"Error revoking token: {e}")
     
-    def refresh_token(self, token: str, new_expires_in_hours: int = 24) -> Optional[str]:
+    def refresh_token(self, token: str, new_expires_in_hours: int = None) -> Optional[str]:
         """
         Refresh a token by creating a new one
         
@@ -356,6 +355,9 @@ class SecureTokenManager:
         """
         try:
             validation_result = self.validate_token(token)
+            
+            if new_expires_in_hours is None:
+                new_expires_in_hours = config.DEFAULT_EXPIRATION_HOURS
             
             payload = validation_result['payload']
             
@@ -578,9 +580,9 @@ class SecureTokenManager:
         """
         return {
             'secret_key_hash': base64.b64encode(
-                self.secret_key[:16]  # Only a part of the key for identification
+                config.SECRET_KEY.encode('utf-8')[:16]
             ).decode(),
-            'salt': base64.b64encode(self.salt).decode(),
+            'salt': base64.b64encode(config.SALT).decode(),
             'version': '1.0',
             'algorithm': 'Fernet-PBKDF2-SHA256'
         }
