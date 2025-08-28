@@ -5,7 +5,7 @@ This module contains the SecureTokenManager class, which provides full
 features for creating, validating, revoking, and extending encrypted tokens.
 
 Author: AmirHossein Babaee
-Create Date: 2025-08-25
+Create Date: 2025
 Version: 1.0.0
 """
 
@@ -20,7 +20,10 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-from .exceptions import TokenError, PermissionDeniedError
+from .exceptions import (
+    TokenError, TokenExpiredError, TokenRevokedError, 
+    InvalidTokenError, PermissionDeniedError
+)
 from .validators import validate_user_id, validate_expires_hours, validate_permissions
 
 
@@ -60,7 +63,7 @@ class SecureTokenManager:
             if salt:
                 self.salt = salt
             else:
-                self.salt = b'secure_token_salt_2024'  # use random salt in production
+                self.salt = b'secure_token_salt_2024'  
             
             # setup encryption system
             self._setup_encryption()
@@ -202,5 +205,394 @@ class SecureTokenManager:
         except Exception as e:
             logger.error(f"Error generating token: {e}")
             raise TokenError(f"Error generating token: {e}")
+
+    def validate_token(self, token: str) -> Dict[str, Any]:
+        """
+        Validate a token
         
+        Args:
+            token: Token to validate
         
+        Returns:
+            Dict: Result of validation including status and token information
+
+        Raises:
+            InvalidTokenError: If the token format is invalid
+            TokenExpiredError: If the token has expired
+            TokenRevokedError: If the token has been revoked
+            TokenError: Other token errors
+        
+        Example:
+            >>> result = manager.validate_token(token)
+            >>> if result['valid']:
+            ...     print(f"user: {result['user_id']}")
+        """
+        try:
+            if not isinstance(token, str) or not token.strip():
+                raise InvalidTokenError('Token is empty or invalid')
+            
+            # decrypt token
+            try:
+                encrypted_data = base64.urlsafe_b64decode(token.encode('ascii'))
+                decrypted_data = self.cipher_suite.decrypt(encrypted_data)
+                payload = json.loads(decrypted_data.decode('utf-8'))
+            except Exception as e:
+                logger.warning(f"Error decrypting token: {e}")
+                raise InvalidTokenError('Token format is invalid')
+            
+            # check payload structure
+            required_fields = ['token_id', 'user_id', 'expires_at']
+            for field in required_fields:
+                if field not in payload:
+                    raise InvalidTokenError(f'Field {field} is missing in token')
+            
+            token_id = payload['token_id']
+            expires_at = datetime.fromisoformat(payload['expires_at'])
+            current_time = datetime.now()
+            
+            # check expiration
+            if current_time > expires_at:
+                self.stats['tokens_expired'] += 1
+                logger.info(f"Token expired: {token_id}")
+                raise TokenExpiredError('Token expired')
+            
+            # check if token exists in active tokens
+            if token_id not in self.active_tokens:
+                raise InvalidTokenError('Token not found in active tokens')
+            
+            token_info = self.active_tokens[token_id]
+            
+            # check if token is revoked
+            if token_info['is_revoked']:
+                raise TokenRevokedError('Token revoked')
+            
+            # update statistics
+            self.stats['tokens_validated'] += 1
+            
+            logger.debug(f"Token validated: {token_id} - User: {payload['user_id']}")
+            
+            return {
+                'valid': True,
+                'payload': payload,
+                'user_id': payload['user_id'],
+                'permissions': payload.get('permissions', []),
+                'expires_at': expires_at,
+                'issued_at': datetime.fromisoformat(payload['issued_at']),
+                'additional_data': payload.get('additional_data', {}),
+                'time_remaining': str(expires_at - current_time)
+            }
+            
+        except (InvalidTokenError, TokenExpiredError, TokenRevokedError, TokenError):
+            raise
+        except Exception as e:
+            logger.error(f"Error validating token: {e}")
+            raise TokenError(f'Internal error: {str(e)}')
+    
+    def revoke_token(self, token: str) -> bool:
+        """
+        Revoke a token
+        
+        Args:
+            token: Token to revoke
+        
+        Returns:
+            bool: True on success
+
+        Raises:
+            InvalidTokenError: If the token format is invalid
+            TokenExpiredError: If the token has expired
+            TokenRevokedError: If the token has been revoked
+            TokenError: Other token errors
+        
+        Example:
+            >>> success = manager.revoke_token(token)
+            >>> print(f"Revoked: {success}")
+        """
+        try:
+            validation_result = self.validate_token(token)
+            
+            token_id = validation_result['payload']['token_id']
+            user_id = validation_result['user_id']
+            
+            # mark as revoked
+            self.active_tokens[token_id]['is_revoked'] = True
+            self.active_tokens[token_id]['revoked_at'] = datetime.now()
+            
+            # update statistics
+            self.stats['tokens_revoked'] += 1
+            
+            logger.info(f"Token revoked: {token_id} - User: {user_id}")
+            
+            return True
+            
+        except (InvalidTokenError, TokenExpiredError, TokenRevokedError, TokenError):
+            raise
+        except Exception as e:
+            logger.error(f"Error revoking token: {e}")
+            raise TokenError(f"Error revoking token: {e}")
+    
+    def refresh_token(self, token: str, new_expires_in_hours: int = 24) -> Optional[str]:
+        """
+        Refresh a token by creating a new one
+        
+        Args:
+            token: Current token
+            new_expires_in_hours: New expiration time
+        
+        Returns:
+            Optional[str]: New token on success, None otherwise
+        
+        Raises:
+            InvalidTokenError: If the token format is invalid
+            TokenExpiredError: If the token has expired
+            TokenRevokedError: If the token has been revoked
+            PermissionDeniedError: If the token does not have the required permission
+            TokenError: Other token errors
+
+        Example:
+            >>> new_token = manager.refresh_token(old_token, 48)
+            >>> if new_token:
+            ...     print("Refreshed")
+        """
+        try:
+            validation_result = self.validate_token(token)
+            
+            payload = validation_result['payload']
+            
+            # Revoke the old token
+            self.revoke_token(token)
+            
+            # Create a new token with similar information
+            new_token = self.generate_token(
+                user_id=payload['user_id'],
+                permissions=payload.get('permissions', []),
+                expires_in_hours=new_expires_in_hours,
+                additional_data=payload.get('additional_data', {})
+            )
+            
+            logger.info(f"Token refreshed for user: {payload['user_id']}")
+            
+            return new_token
+            
+        except (TokenError, PermissionDeniedError, InvalidTokenError, TokenExpiredError, TokenRevokedError):
+            raise
+        except Exception as e:
+            logger.error(f"Error refreshing token: {e}")
+            raise TokenError(f"Error refreshing token: {e}")
+    
+    def get_token_info(self, token: str) -> Dict[str, Any]:
+        """
+        Get complete token information
+        
+        Args:
+            token: Token to check
+        
+        Raises:
+            InvalidTokenError: If the token format is invalid
+            TokenExpiredError: If the token has expired
+            TokenRevokedError: If the token has been revoked
+            TokenError: Other token errors
+
+        Returns:
+            Dict: Complete token information
+        """
+        try:
+            validation_result = self.validate_token(token)
+            
+            payload = validation_result['payload']
+            token_id = payload['token_id']
+            
+            # Get additional info from memory
+            stored_info = self.active_tokens.get(token_id, {})
+            
+            return {
+                'valid': True,
+                'token_id': token_id,
+                'user_id': payload['user_id'],
+                'permissions': payload.get('permissions', []),
+                'issued_at': payload['issued_at'],
+                'expires_at': payload['expires_at'],
+                'additional_data': payload.get('additional_data', {}),
+                'time_remaining': validation_result['time_remaining'],
+                'is_revoked': stored_info.get('is_revoked', False),
+                'created_at': stored_info.get('created_at', '').isoformat() if stored_info.get('created_at') else None
+            }
+
+        except (InvalidTokenError, TokenExpiredError, TokenRevokedError, TokenError):
+            raise
+        except Exception as e:
+            logger.error(f"Error getting token info: {e}")
+            raise TokenError(f"Error getting token info: {e}")
+    
+    def check_permission(self, token: str, required_permission: str) -> bool:
+        """
+        Check for a specific permission in the token
+        
+        Args:
+            token: Token to check
+            required_permission: Permission to check
+        
+        Returns:
+            bool: True if permission exists
+
+        Raises:
+            InvalidTokenError: If token is invalid
+            TokenExpiredError: If token is expired
+            TokenRevokedError: If token is revoked
+            PermissionDeniedError: If permission is not granted
+            TokenError: Other token errors
+        
+        Example:
+            >>> has_access = manager.check_permission(token, "admin")
+            >>> if has_access:
+            ...     print("Permission granted")
+        """
+        try:
+            validation_result = self.validate_token(token)
+            
+            permissions = validation_result.get('permissions', [])
+            if required_permission not in permissions:
+                raise PermissionDeniedError(f"Permission '{required_permission}' not granted")
+            return True
+
+        except (PermissionDeniedError, InvalidTokenError, TokenExpiredError, TokenRevokedError, TokenError):
+            raise
+
+        except Exception as e:
+            logger.error(f"Error checking permission: {e}")
+            raise TokenError(f"Error checking permission: {e}")
+    
+    def revoke_user_tokens(self, user_id: str) -> int:
+        """
+        Revoke all tokens for a user
+        
+        Args:
+            user_id: User ID
+        
+        Raises:
+            TokenError: Other errors
+
+        Returns:
+            int: Number of revoked tokens
+        """
+        try:
+            validate_user_id(user_id)
+
+            revoked_count = 0
+            current_time = datetime.now()
+            
+            for token_id, token_info in self.active_tokens.items():
+                if (token_info['user_id'] == user_id and 
+                    not token_info['is_revoked'] and
+                    token_info['expires_at'] > current_time):
+                    
+                    token_info['is_revoked'] = True
+                    token_info['revoked_at'] = current_time
+                    revoked_count += 1
+            
+            self.stats['tokens_revoked'] += revoked_count
+            logger.info(f"{revoked_count} tokens revoked for user {user_id}")
+            
+            return revoked_count
+
+        except (TokenError):
+            raise
+        except Exception as e:
+            logger.error(f"Error revoking user tokens: {e}")
+            raise TokenError(f"Error revoking user tokens: {e}")
+    
+    def cleanup_expired_tokens(self) -> int:
+        """
+        Remove expired and revoked tokens
+        
+        Returns:
+            int: Number of tokens cleaned up
+
+        Raises:
+            TokenError: Other errors
+        """
+        try:
+            current_time = datetime.now()
+            expired_tokens = []
+            
+            for token_id, token_info in self.active_tokens.items():
+                if (current_time > token_info['expires_at'] or 
+                    token_info['is_revoked']):
+                    expired_tokens.append(token_id)
+            
+            # حذف توکن‌های منقضی
+            for token_id in expired_tokens:
+                del self.active_tokens[token_id]
+            
+            logger.info(f"{len(expired_tokens)} expired tokens cleaned up")
+            
+            return len(expired_tokens)
+            
+        except Exception as e:
+            logger.error(f"Error cleaning up expired tokens: {e}")
+            raise TokenError(f"Error cleaning up expired tokens: {e}")
+
+    def get_stats(self) -> Dict[str, Any]:
+        """
+        Get statistics about token usage
+        
+        Returns:
+            Dict: Complete statistics including token counts and operations
+        """
+        current_time = datetime.now()
+        
+        active_count = len([
+            t for t in self.active_tokens.values()
+            if not t['is_revoked'] and t['expires_at'] > current_time
+        ])
+        
+        expired_count = len([
+            t for t in self.active_tokens.values()
+            if t['expires_at'] <= current_time
+        ])
+        
+        revoked_count = len([
+            t for t in self.active_tokens.values()
+            if t['is_revoked']
+        ])
+        
+        return {
+            'total_generated': self.stats['tokens_generated'],
+            'total_validated': self.stats['tokens_validated'],
+            'total_revoked': self.stats['tokens_revoked'],
+            'total_expired': self.stats['tokens_expired'],
+            'currently_active': active_count,
+            'currently_expired': expired_count,
+            'currently_revoked': revoked_count,
+            'cleanup_needed': expired_count + revoked_count
+        }
+    
+    def export_config(self) -> Dict[str, str]:
+        """
+        Export configuration for backup
+        
+        Returns:
+            Dict: Configuration that can be saved
+        
+        Note: This method is for development purposes and should be used with caution in production
+        """
+        return {
+            'secret_key_hash': base64.b64encode(
+                self.secret_key[:16]  # Only a part of the key for identification
+            ).decode(),
+            'salt': base64.b64encode(self.salt).decode(),
+            'version': '1.0',
+            'algorithm': 'Fernet-PBKDF2-SHA256'
+        }
+    
+    def __str__(self) -> str:
+        """Show class as string"""
+        stats = self.get_stats()
+        return (f"SecureTokenManager("
+                f"active={stats['currently_active']}, "
+                f"generated={stats['total_generated']}"
+                f")")
+    
+    def __repr__(self) -> str:
+        """Show class as string"""
+        return f"SecureTokenManager(tokens_count={len(self.active_tokens)})"

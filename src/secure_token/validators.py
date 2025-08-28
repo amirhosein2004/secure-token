@@ -1,7 +1,7 @@
 """Input validators"""
 
 import re
-from typing import List, Any
+from typing import List
 from .exceptions import TokenError
 
 def validate_user_id(user_id: str) -> bool:

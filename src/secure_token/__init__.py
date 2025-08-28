@@ -5,12 +5,16 @@ Author: [Amirhossein Babaee]
 """
 
 from .token_manager import SecureTokenManager
-from .exceptions import TokenError
+from .exceptions import TokenError, TokenExpiredError, TokenRevokedError, InvalidTokenError, PermissionDeniedError
 from .validators import validate_user_id, validate_permissions, validate_expires_hours
 
 __all__ = [
     'SecureTokenManager',
     'TokenError',
+    'TokenExpiredError',
+    'TokenRevokedError',
+    'InvalidTokenError',
+    'PermissionDeniedError',
     'validate_user_id',
     'validate_permissions',
     'validate_expires_hours'
