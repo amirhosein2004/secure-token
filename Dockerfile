@@ -33,5 +33,5 @@ USER appuser
 # Expose port (adjust as needed)
 EXPOSE 8000
 
-# Default command (adjust based on your application)
-CMD ["python", "main.py"]
+# Default command
+    CMD echo "👋Wellcome to Crypto-Token!" && bash

@@ -3,20 +3,23 @@
 
 class TokenError(Exception):
     """General token error"""
+
     pass
+
 
 class TokenExpiredError(TokenError):
     """Token expired error"""
+
     pass
 
-class TokenRevokedError(TokenError):
-    """Token revoked error"""
-    pass
 
 class InvalidTokenError(TokenError):
     """Invalid token error"""
+
     pass
+
 
 class PermissionDeniedError(TokenError):
     """Permission denied error"""
+
     pass

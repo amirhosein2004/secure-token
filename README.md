@@ -24,9 +24,6 @@ The application is fully containerized. You can build and run it using Docker.
     ```
 
 2.  **Run the container:**
-    This will run the `main.py` script inside the container.
     ```bash
-    docker run -d -p 8000:8000 --name name-of-container name-of-image:tag
+    docker run -d -it -p 8000:8000 --name name-of-container name-of-image:tag
     ```
-
-This will start the application and, based on the current `main.py`, print a test message every 5 seconds.
