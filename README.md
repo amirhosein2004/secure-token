@@ -3,7 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/secure-token.svg)](https://badge.fury.io/py/secure-token)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Downloads](https://pepy.tech/badge/secure-token)](https://pepy.tech/project/secure-token)
+[![Downloads](https://static.pepy.tech/badge/secure-token)](https://pepy.tech/project/secure-token)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/amirhosein2004/secure-token)
 
 A simple and secure token management library for Python applications. Generate, validate, and manage encrypted tokens with ease.
@@ -362,7 +362,7 @@ if auth.verify_access(token, "write"):
 - **[🔧 Advanced Examples](docs/advanced-examples.md)** - Real-world examples with Flask, Django, and Python apps
 
 ### 🌐 Online Documentation
-**[https://secure-token.readthedocs.io](https://secure-token.readthedocs.io)**
+**[https://secure-token.readthedocs.io/en](https://secure-token.readthedocs.io/en/)**
 
 ## 🤝 Contributing
 
@@ -376,7 +376,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **PyPI Package**: [https://pypi.org/project/secure-token/](https://pypi.org/project/secure-token/)
 - **Source Code**: [https://github.com/amirhosein2004/secure-token](https://github.com/amirhosein2004/secure-token)
-- **Documentation**: [https://secure-token.readthedocs.io](https://secure-token.readthedocs.io)
+- **Documentation**: [https://secure-token.readthedocs.io/en](https://secure-token.readthedocs.io/en/)
 - **Bug Reports**: [https://github.com/amirhosein2004/secure-token/issues](https://github.com/amirhosein2004/secure-token/issues)
 
 ---
