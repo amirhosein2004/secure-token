@@ -33,10 +33,10 @@ theme:
     - content.tabs.link
 
 nav:
-  - Home: ../README.md
+  - Home: index.md
   - quick: README.md
   - Tutorial: tutorial-guide.md
-  - developers: development-setup.md
+  - Setup developers: development-setup.md
   - API Reference: api-reference.md
   - Advanced Examples: advanced-examples.md
   - Testing: testing-guide.md
