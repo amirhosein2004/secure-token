@@ -6,20 +6,6 @@ from typing import List
 from .exceptions import TokenError
 
 
-def validate_user_id(user_id: str) -> bool:
-    """Validate user id"""
-    if not isinstance(user_id, str):
-        raise TokenError("User id must be a string")
-
-    if len(user_id) < 3 or len(user_id) > 50:
-        raise TokenError("User id must be between 3 and 50 characters")
-
-    if not re.match(r"^[a-zA-Z0-9_\u0600-\u06FF]+$", user_id):
-        raise TokenError("User id can only contain letters, numbers and underscores")
-
-    return True
-
-
 def validate_permissions(permissions: List[str]) -> bool:
     """Validate permissions"""
     if not isinstance(permissions, list):

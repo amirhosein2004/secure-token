@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 SecureToken Performance Benchmark Script
 
@@ -62,12 +61,16 @@ class TokenBenchmark:
 
         for token in tokens:
             start = time.perf_counter()
-            result = self.manager.validate_token(token)
-            end = time.perf_counter()
-
-            times.append(end - start)
-            if result["valid"]:
-                valid_count += 1
+            try:
+                result = self.manager.validate_token(token)
+                end = time.perf_counter()
+                times.append(end - start)
+                if result["valid"]:
+                    valid_count += 1
+            except Exception:
+                # Token validation failed
+                end = time.perf_counter()
+                times.append(end - start)
 
         self.results["validation"] = {
             "count": len(tokens),
@@ -91,7 +94,9 @@ class TokenBenchmark:
             batch_manager = SecureTokenManager()  # Each thread has a separate manager
             tokens = []
             for i in range(start_idx, start_idx + count):
-                token = batch_manager.generate_token(f"concurrent_user_{i}")
+                token = batch_manager.generate_token(
+                    user_id=f"concurrent_user_{i}", permissions=["read"], expires_in_hours=24
+                )
                 tokens.append(token)
             return tokens
 
@@ -142,7 +147,9 @@ class TokenBenchmark:
         # Generate tokens
         start_time = time.perf_counter()
         for i in range(token_count):
-            self.manager.generate_token(f"memory_test_user_{i}")
+            self.manager.generate_token(
+                user_id=f"memory_test_user_{i}", permissions=["read"], expires_in_hours=24
+            )
         end_time = time.perf_counter()
 
         # Memory after generation

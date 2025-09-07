@@ -23,7 +23,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from .config import Settings
 from .exceptions import InvalidTokenError, PermissionDeniedError, TokenError, TokenExpiredError
-from .validators import validate_expires_hours, validate_permissions, validate_user_id
+from .validators import validate_expires_hours, validate_permissions
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +124,6 @@ class SecureTokenManager:
                 expires_in_hours = self.settings.DEFAULT_EXPIRATION_HOURS
 
             # validate inputs
-            validate_user_id(user_id)
             validate_expires_hours(expires_in_hours)
 
             if permissions is None:

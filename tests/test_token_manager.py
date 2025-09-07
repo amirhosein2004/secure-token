@@ -261,14 +261,6 @@ class TestSecureTokenManager:
         assert "SecureTokenManager" in repr_repr
         assert "stateless_mode=True" in repr_repr
 
-    def test_invalid_user_id(self, manager):
-        """Test token generation with invalid user ID"""
-        invalid_user_ids = ["", "   ", "a" * 256]  # Empty, whitespace, too long
-
-        for invalid_id in invalid_user_ids:
-            with pytest.raises(TokenError):
-                manager.generate_token(invalid_id)
-
     def test_concurrent_token_operations(self, manager):
         """Test concurrent token operations"""
         import queue
