@@ -34,9 +34,8 @@ theme:
 
 nav:
   - Home: index.md
-  - quick: README.md
   - Tutorial: tutorial-guide.md
-  - Setup developers: development-setup.md
+  - Development Setup: development-setup.md
   - API Reference: api-reference.md
   - Advanced Examples: advanced-examples.md
   - Testing: testing-guide.md
