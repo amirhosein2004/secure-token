@@ -382,5 +382,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Made with ❤️ by [AmirHossein Babaee](https://github.com/amirhosein2004)**
+## version 1
 
 *Secure Token - Because your application's security matters.*
