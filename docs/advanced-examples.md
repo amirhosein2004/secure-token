@@ -985,9 +985,10 @@ start_time = time.time()
 result2 = cached_manager.validate_token_cached(token)
 time2 = time.time() - start_time
 
-print(f"First validation: {time1:.4f}s")
-print(f"Cached validation: {time2:.4f}s")
-print(f"Speedup: {time1/time2:.2f}x")
+# Performance metrics available for analysis
+first_validation_time = time1
+cached_validation_time = time2
+speedup_factor = time1/time2
 ```
 
 ### Batch Operations
@@ -1034,8 +1035,9 @@ start_time = time.time()
 tokens = batch_manager.generate_tokens_batch(user_requests)
 generation_time = time.time() - start_time
 
-print(f"Generated {len(tokens)} tokens in {generation_time:.2f}s")
-print(f"Rate: {len(tokens)/generation_time:.0f} tokens/second")
+# Performance metrics
+tokens_generated = len(tokens)
+generation_rate = len(tokens)/generation_time
 
 # Validate tokens in batch
 start_time = time.time()
@@ -1043,8 +1045,7 @@ results = batch_manager.validate_tokens_batch(tokens)
 validation_time = time.time() - start_time
 
 successful = sum(1 for r in results if r["success"])
-print(f"Validated {successful}/{len(results)} tokens in {validation_time:.2f}s")
-print(f"Rate: {len(results)/validation_time:.0f} validations/second")
+validation_rate = len(results)/validation_time
 ```
 
 ---

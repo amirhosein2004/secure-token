@@ -49,32 +49,28 @@ token = manager.generate_token(
     permissions=["read", "write"],
     expires_in_hours=24
 )
-print(f"Generated token: {token[:50]}...")
 
 # Validate the token
 result = manager.validate_token(token)
 if result['valid']:
-    print(f"✅ Welcome back, {result['user_id']}!")
-    print(f"🔑 Your permissions: {result['permissions']}")
-    print(f"⏰ Expires at: {result['expires_at']}")
-else:
-    print("❌ Invalid token")
+    user_id = result['user_id']
+    permissions = result['permissions']
+    expires_at = result['expires_at']
 
 # Check specific permission
 try:
     manager.check_permission(token, "write")
-    print("✅ Write access granted!")
 except PermissionDeniedError:
-    print("❌ Write access denied")
+    pass
 ```
 
-**Output:**
+**Result:**
 ```
-Generated token: gAAAAABh8J9K3L2M5N6O7P8Q9R0S1T2U3V4W5X6Y7Z8A9B...
-✅ Welcome back, john_doe!
-🔑 Your permissions: ['read', 'write']
-⏰ Expires at: 2025-01-08 10:30:00
-✅ Write access granted!
+Token generated successfully
+User authenticated: john_doe
+Permissions: ['read', 'write']
+Expires: 2025-01-08 10:30:00
+Write access: granted
 ```
 
 ## 🎯 Core Features
@@ -130,17 +126,15 @@ try:
     additional_data = result['additional_data']
     time_remaining = result['time_remaining']
 
-    print(f"✅ Valid token for user: {user_id}")
-    print(f"🔑 Permissions: {permissions}")
-    print(f"⏰ Time remaining: {time_remaining}")
-    print(f"📊 Additional data: {additional_data}")
-
 except TokenExpiredError:
-    print("❌ Token has expired - please login again")
+    # Handle expired token - redirect to login
+    pass
 except InvalidTokenError:
-    print("❌ Invalid token format - authentication failed")
+    # Handle invalid token - authentication failed
+    pass
 except Exception as e:
-    print(f"❌ Token validation error: {e}")
+    # Handle other token errors
+    pass
 ```
 
 ### 🔄 **Token Refresh**
@@ -175,9 +169,10 @@ from secure_token import PermissionDeniedError
 # Check single permission
 try:
     manager.check_permission(token, "admin")
-    print("✅ Admin access granted!")
+    # Grant admin access
 except PermissionDeniedError:
-    print("❌ Admin access denied")
+    # Handle access denied
+    pass
 
 # Check multiple permissions
 def check_multiple_permissions(token, required_permissions):
@@ -195,8 +190,9 @@ def check_multiple_permissions(token, required_permissions):
 
 # Usage
 result = check_multiple_permissions(token, ["read", "write", "admin"])
-print(f"✅ Granted: {result['granted']}")
-print(f"❌ Denied: {result['denied']}")
+granted_permissions = result['granted']
+denied_permissions = result['denied']
+# Process permission results
 ```
 
 ### 📊 **Token Information**
@@ -205,29 +201,26 @@ Get comprehensive token details:
 ```python
 info = manager.get_token_info(token)
 
-print(f"🆔 Token ID: {info['token_id']}")
-print(f"👤 User: {info['user_id']}")
-print(f"⏰ Time remaining: {info['time_remaining']}")
-print(f"🔑 Permissions: {info['permissions']}")
-print(f"📅 Issued at: {info['issued_at']}")
-print(f"⌛ Expires at: {info['expires_at']}")
-print(f"📊 Additional data: {info['additional_data']}")
-print(f"🔒 Is revoked: {info['is_revoked']}")
+# Access token information
+token_id = info['token_id']
+user_id = info['user_id']
+time_remaining = info['time_remaining']
+permissions = info['permissions']
+issued_at = info['issued_at']
+expires_at = info['expires_at']
+additional_data = info['additional_data']
+is_revoked = info['is_revoked']
 
 # Example: Token dashboard
-def display_token_dashboard(token):
-    try:
-        info = manager.get_token_info(token)
-        print("=" * 50)
-        print("🔐 TOKEN DASHBOARD")
-        print("=" * 50)
-        print(f"User ID: {info['user_id']}")
-        print(f"Status: {'✅ Active' if info['valid'] else '❌ Invalid'}")
-        print(f"Permissions: {', '.join(info['permissions'])}")
-        print(f"Time Left: {info['time_remaining']}")
-        print("=" * 50)
-    except Exception as e:
-        print(f"❌ Error: {e}")
+def get_token_dashboard(token):
+    """Get token information for dashboard display"""
+    info = manager.get_token_info(token)
+    return {
+        'user_id': info['user_id'],
+        'status': 'active' if info['valid'] else 'invalid',
+        'permissions': info['permissions'],
+        'time_remaining': info['time_remaining']
+    }
 ```
 
 ## 🔧 Configuration
@@ -354,15 +347,20 @@ if auth.verify_access(token, "write"):
 
 ## 📚 Documentation
 
-### 📖 Documentation Files
-- **[📋 API Reference](docs/api-reference.md)** - Complete API documentation with all methods and parameters
-- **[🎓 Tutorial Guide](docs/tutorial-guide.md)** - Step-by-step beginner's guide with examples
-- **[⚙️ Development Setup](docs/development-setup.md)** - Set up development environment
-- **[🧪 Testing Guide](docs/testing-guide.md)** - Run tests and benchmarks
-- **[🔧 Advanced Examples](docs/advanced-examples.md)** - Real-world examples with Flask, Django, and Python apps
+### 📖 **Complete Documentation**
 
-### 🌐 Online Documentation
-**[https://secure-token.readthedocs.io/en](https://secure-token.readthedocs.io/en/)**
+> **📋 [API Reference](docs/api-reference.md)** - Complete API documentation with all methods and parameters
+
+> **🎓 [Tutorial Guide](docs/tutorial-guide.md)** - Step-by-step beginner's guide with examples
+
+> **🔧 [Advanced Examples](docs/advanced-examples.md)** - Real-world examples with Flask, Django, and Python apps
+
+> **⚙️ [Development Setup](docs/development-setup.md)** - Set up development environment
+
+> **🧪 [Testing Guide](docs/testing-guide.md)** - Run tests and benchmarks
+
+### 🌐 **Online Documentation**
+> **[📖 Full Documentation Site](https://secure-token.readthedocs.io/en/)**
 
 ## 🤝 Contributing
 
@@ -382,6 +380,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 **Made with ❤️ by [AmirHossein Babaee](https://github.com/amirhosein2004)**
-## version 1
 
 *Secure Token - Because your application's security matters.*

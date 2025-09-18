@@ -4,8 +4,8 @@ site_author: Amirhosein
 repo_url: https://github.com/amirhosein2004/secure-token
 repo_name: amirhosein2004/secure-token
 
-# Use current directory as docs source
-docs_dir: '.'
+# Use docs directory as docs source
+docs_dir: '..'
 
 theme:
   name: material

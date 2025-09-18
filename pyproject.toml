@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secure-token"
-version = "1.0.0"
+version = "1.0.1"
 description = "Secure Token System for Python"
 readme = "README.md"
 license = {text = "MIT"}

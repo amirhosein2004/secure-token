@@ -107,12 +107,12 @@ validate_token(token: str) -> Dict[str, Any]
 ```python
 try:
     result = manager.validate_token(token)
-    print(f"User: {result['user_id']}")
-    print(f"Permissions: {result['permissions']}")
+    user_id = result['user_id']
+    permissions = result['permissions']
 except TokenExpiredError:
-    print("Token expired")
+    pass
 except InvalidTokenError:
-    print("Invalid token")
+    pass
 ```
 
 #### refresh_token()
@@ -178,9 +178,10 @@ get_token_info(token: str) -> Dict[str, Any]
 **Example:**
 ```python
 info = manager.get_token_info(token)
-print(f"Token ID: {info['token_id']}")
-print(f"User: {info['user_id']}")
-print(f"Time remaining: {info['time_remaining']}")
+token_id = info['token_id']
+user_id = info['user_id']
+time_remaining = info['time_remaining']
+# Use token information as needed
 ```
 
 #### check_permission()
@@ -208,9 +209,10 @@ check_permission(token: str, required_permission: str) -> bool
 ```python
 try:
     manager.check_permission(token, "admin")
-    print("Admin access granted")
+    # Grant admin access
 except PermissionDeniedError:
-    print("Access denied")
+    # Handle access denied
+    pass
 ```
 
 #### export_config()
@@ -231,8 +233,9 @@ export_config() -> Dict[str, str]
 **Example:**
 ```python
 config = manager.export_config()
-print(f"Algorithm: {config['algorithm']}")
-print(f"Version: {config['version']}")
+algorithm = config['algorithm']
+version = config['version']
+# Use configuration data as needed
 ```
 
 ## Settings
@@ -343,18 +346,19 @@ from secure_token import (
 
 try:
     result = manager.validate_token(token)
+    # Process successful validation
 except TokenExpiredError:
-    # Handle expired token
-    print("Please login again")
+    # Handle expired token - redirect to login
+    pass
 except InvalidTokenError:
-    # Handle invalid token
-    print("Authentication failed")
+    # Handle invalid token - authentication failed
+    pass
 except PermissionDeniedError:
-    # Handle permission issues
-    print("Access denied")
+    # Handle permission issues - access denied
+    pass
 except TokenError as e:
     # Handle other token errors
-    print(f"Token error: {e}")
+    pass
 ```
 
 ## Utility Functions
@@ -380,7 +384,7 @@ generate_secret_key(length: int = 32) -> str
 from secure_token import generate_secret_key
 
 secret = generate_secret_key(32)
-print(f"Generated secret: {secret}")
+# Use the generated secret key securely
 ```
 
 ### generate_salt()
@@ -402,7 +406,7 @@ generate_salt(length: int = 32) -> bytes
 from secure_token import generate_salt
 
 salt = generate_salt(32)
-print(f"Generated salt: {salt}")
+# Use the generated salt for key derivation
 ```
 
 ## Validators
@@ -429,9 +433,10 @@ from secure_token import validate_user_id
 
 try:
     validate_user_id("user123")
-    print("Valid user ID")
+    # User ID is valid
 except ValueError as e:
-    print(f"Invalid user ID: {e}")
+    # Handle invalid user ID
+    pass
 ```
 
 ### validate_permissions()
@@ -454,9 +459,10 @@ from secure_token import validate_permissions
 
 try:
     validate_permissions(["read", "write", "admin"])
-    print("Valid permissions")
+    # Permissions are valid
 except ValueError as e:
-    print(f"Invalid permissions: {e}")
+    # Handle invalid permissions
+    pass
 ```
 
 ### validate_expires_hours()
@@ -479,9 +485,10 @@ from secure_token import validate_expires_hours
 
 try:
     validate_expires_hours(24)
-    print("Valid expiration time")
+    # Expiration time is valid
 except ValueError as e:
-    print(f"Invalid expiration: {e}")
+    # Handle invalid expiration time
+    pass
 ```
 
 ## Performance Characteristics
