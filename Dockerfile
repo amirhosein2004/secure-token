@@ -34,4 +34,4 @@ USER appuser
 EXPOSE 8000
 
 # Default command
-    CMD echo "👋Wellcome to Crypto-Token!" && bash
+    CMD echo "👋Wellcome to Secure-Token!" && bash

@@ -43,7 +43,7 @@ The project includes these development tools:
 Test your setup:
 ```bash
 # Run a simple test
-python -c "from src.secure_token import SecureTokenManager; print('✅ Import successful')"
+python -c "from src.secure_token import SecureTokenManager; manager = SecureTokenManager()"
 
 # Run basic example
 python -m examples.basic_usage

@@ -39,7 +39,7 @@ from secure_token import SecureTokenManager
 # Initialize the token manager
 manager = SecureTokenManager()
 
-print("✅ Secure Token Manager initialized successfully!")
+# Token manager is now ready for use
 ```
 
 Run the file:
@@ -47,9 +47,9 @@ Run the file:
 python app.py
 ```
 
-**Expected Output:**
+**Result:**
 ```
-✅ Secure Token Manager initialized successfully!
+Token manager initialized and ready for use
 ```
 
 ## 3. Your First Token
@@ -66,14 +66,14 @@ manager = SecureTokenManager()
 # Generate a basic token
 token = manager.generate_token(user_id="tutorial_user")
 
-print(f"🔐 Generated token: {token[:50]}...")
-print(f"📏 Token length: {len(token)} characters")
+# Token is now ready for use
+token_length = len(token)
 ```
 
-**Expected Output:**
+**Result:**
 ```
-🔐 Generated token: gAAAAABh8J9K3L2M5N6O7P8Q9R0S1T2U3V4W5X6Y7Z8A9B...
-📏 Token length: 156 characters
+Token generated successfully
+Token length: 156 characters
 ```
 
 ### Understanding the Token
@@ -104,8 +104,9 @@ admin_token = manager.generate_token(
     permissions=["read", "write", "admin", "delete"]
 )
 
-print("✅ User token created with read/write permissions")
-print("✅ Admin token created with full permissions")
+# Tokens are now ready for use
+# user_token has read/write permissions
+# admin_token has full permissions
 ```
 
 ### Permission Examples
@@ -147,27 +148,29 @@ token = manager.generate_token(
 try:
     result = manager.validate_token(token)
 
-    print("✅ Token Validation Results:")
-    print(f"   User ID: {result['user_id']}")
-    print(f"   Permissions: {result['permissions']}")
-    print(f"   Expires at: {result['expires_at']}")
-    print(f"   Time remaining: {result['time_remaining']}")
-    print(f"   Valid: {result['valid']}")
+    # Access validation results
+    user_id = result['user_id']
+    permissions = result['permissions']
+    expires_at = result['expires_at']
+    time_remaining = result['time_remaining']
+    is_valid = result['valid']
 
 except TokenExpiredError:
-    print("❌ Token has expired")
+    # Handle expired token
+    pass
 except InvalidTokenError:
-    print("❌ Token is invalid")
+    # Handle invalid token
+    pass
 ```
 
-**Expected Output:**
+**Result:**
 ```
-✅ Token Validation Results:
-   User ID: test_user
-   Permissions: ['read', 'write']
-   Expires at: 2025-01-07 14:30:00
-   Time remaining: 1:59:45
-   Valid: True
+Token validation successful
+User ID: test_user
+Permissions: ['read', 'write']
+Expires at: 2025-01-07 14:30:00
+Time remaining: 1:59:45
+Status: Valid
 ```
 
 ## 6. Error Handling
@@ -229,10 +232,13 @@ token = manager.generate_token("test_user")
 result = safe_token_validation(token)
 
 if result["success"]:
-    print(f"✅ {result['message']}")
-    print(f"   User: {result['data']['user_id']}")
+    # Handle successful validation
+    user_id = result['data']['user_id']
+    # Process authenticated user
 else:
-    print(f"❌ {result['message']}")
+    # Handle validation failure
+    error_message = result['message']
+    # Handle error appropriately
 ```
 
 ## 7. Token Refresh
@@ -253,11 +259,11 @@ original_token = manager.generate_token(
     expires_in_hours=1
 )
 
-print("🔐 Original token created (expires in 1 hour)")
+# Original token created (expires in 1 hour)
 
 # Get token info
 info = manager.get_token_info(original_token)
-print(f"⏰ Original expiration: {info['expires_at']}")
+original_expiration = info['expires_at']
 
 # Refresh the token with new expiration (24 hours)
 refreshed_token = manager.refresh_token(
@@ -265,13 +271,13 @@ refreshed_token = manager.refresh_token(
     new_expires_in_hours=24
 )
 
-print("🔄 Token refreshed successfully!")
+# Token refreshed successfully
 
 # Check new expiration
 new_info = manager.get_token_info(refreshed_token)
-print(f"⏰ New expiration: {new_info['expires_at']}")
-print(f"👤 User ID preserved: {new_info['user_id']}")
-print(f"🔑 Permissions preserved: {new_info['permissions']}")
+new_expiration = new_info['expires_at']
+user_id = new_info['user_id']  # User ID preserved
+permissions = new_info['permissions']  # Permissions preserved
 ```
 
 ### Automatic Refresh Pattern
@@ -279,22 +285,17 @@ print(f"🔑 Permissions preserved: {new_info['permissions']}")
 ```python
 def auto_refresh_token(token, threshold_hours=2):
     """Automatically refresh token if it expires soon"""
-    try:
-        info = manager.get_token_info(token)
-        time_remaining = info['time_remaining']
+    info = manager.get_token_info(token)
+    time_remaining = info['time_remaining']
 
-        # Parse remaining time (format: "X:XX:XX")
-        hours_remaining = int(time_remaining.split(':')[0])
+    # Parse remaining time (format: "X:XX:XX")
+    hours_remaining = int(time_remaining.split(':')[0])
 
-        if hours_remaining < threshold_hours:
-            print(f"⚠️  Token expires in {time_remaining}, refreshing...")
-            return manager.refresh_token(token, new_expires_in_hours=24)
+    if hours_remaining < threshold_hours:
+        # Token expires soon, refreshing
+        return manager.refresh_token(token, new_expires_in_hours=24)
 
-        return token
-
-    except Exception as e:
-        print(f"❌ Auto-refresh failed: {e}")
-        return None
+    return token
 ```
 
 ## 8. Advanced Features
@@ -332,11 +333,11 @@ token = manager.generate_token(
 result = manager.validate_token(token)
 custom_data = result['additional_data']
 
-print("📊 Custom Data in Token:")
-print(f"   Role: {custom_data['role']}")
-print(f"   Department: {custom_data['department']}")
-print(f"   Login IP: {custom_data['login_ip']}")
-print(f"   Preferences: {custom_data['preferences']}")
+# Access custom data from token
+role = custom_data['role']
+department = custom_data['department']
+login_ip = custom_data['login_ip']
+preferences = custom_data['preferences']
 ```
 
 ### Permission Checking
@@ -360,10 +361,9 @@ def check_access(token, required_permission):
         return False
 
 # Test permissions
-print("🔍 Permission Tests:")
-print(f"   Admin has 'admin' permission: {check_access(admin_token, 'admin')}")
-print(f"   User has 'admin' permission: {check_access(user_token, 'admin')}")
-print(f"   User has 'read' permission: {check_access(user_token, 'read')}")
+admin_has_admin = check_access(admin_token, 'admin')
+user_has_admin = check_access(user_token, 'admin')
+user_has_read = check_access(user_token, 'read')
 ```
 
 ## 9. Production Setup
@@ -410,9 +410,10 @@ def create_production_manager():
 # Initialize for production
 try:
     manager = create_production_manager()
-    print("✅ Production token manager initialized")
+    # Production token manager initialized successfully
 except ValueError as e:
-    print(f"❌ Configuration error: {e}")
+    # Handle configuration error
+    pass
 ```
 
 ### Security Best Practices
@@ -437,26 +438,26 @@ def validate_production_config():
     # Check secret key
     secret = os.getenv('SECRET_KEY')
     if not secret:
-        checks.append("❌ SECRET_KEY not set")
+        checks.append("SECRET_KEY not set")
     elif len(secret) < 32:
-        checks.append("⚠️  SECRET_KEY should be at least 32 characters")
+        checks.append("SECRET_KEY should be at least 32 characters")
     else:
-        checks.append("✅ SECRET_KEY configured")
+        checks.append("SECRET_KEY configured")
 
     # Check expiration
     expiration = os.getenv('DEFAULT_EXPIRATION_HOURS')
     if expiration and int(expiration) > 24:
-        checks.append("⚠️  Consider shorter expiration time for production")
+        checks.append("Consider shorter expiration time for production")
     else:
-        checks.append("✅ Expiration time appropriate")
+        checks.append("Expiration time appropriate")
 
     return checks
 
 # Run validation
 if __name__ == "__main__":
-    print("🔒 Production Security Check:")
-    for check in validate_production_config():
-        print(f"   {check}")
+    # Production Security Check
+    checks = validate_production_config()
+    # Process security check results
 ```
 
 ## 10. Common Patterns
