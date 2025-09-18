@@ -73,13 +73,37 @@ jobs:
           echo "exists=false" >> $GITHUB_OUTPUT
         fi
 
+    - name: Check if package exists on PyPI
+      id: check_pypi
+      run: |
+        VERSION="${{ steps.get_version.outputs.version }}"
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://pypi.org/pypi/secure-token/$VERSION/json")
+        if [ "$HTTP_STATUS" = "200" ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "⚠️ Package version $VERSION already exists on PyPI - skipping publish"
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "✅ Package version $VERSION not found on PyPI - proceeding with publish"
+        fi
+
+    - name: Skip publish - Package already exists
+      if: steps.check_pypi.outputs.exists == 'true'
+      run: |
+        echo "🚫 Skipping PyPI publish: Package version ${{ steps.get_version.outputs.version }} already exists"
+        echo "📦 Existing package: https://pypi.org/project/secure-token/${{ steps.get_version.outputs.version }}/"
+
+    - name: Skip publish - Tag already exists
+      if: steps.check_tag.outputs.exists == 'true'
+      run: |
+        echo "🚫 Skipping publish: Git tag v${{ steps.get_version.outputs.version }} already exists"
+
     - name: Build package
-      if: steps.check_tag.outputs.exists == 'false'
+      if: steps.check_tag.outputs.exists == 'false' && steps.check_pypi.outputs.exists == 'false'
       run: |
         python -m build
 
     - name: Publish to PyPI
-      if: steps.check_tag.outputs.exists == 'false'
+      if: steps.check_tag.outputs.exists == 'false' && steps.check_pypi.outputs.exists == 'false'
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
@@ -87,7 +111,7 @@ jobs:
         twine upload dist/*
 
     - name: Create and push tag
-      if: steps.check_tag.outputs.exists == 'false'
+      if: steps.check_tag.outputs.exists == 'false' && steps.check_pypi.outputs.exists == 'false'
       env:
         GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
       run: |
