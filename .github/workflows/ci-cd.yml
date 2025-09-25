@@ -131,14 +131,14 @@ jobs:
         password = ${{ secrets.PYPI_API_TOKEN }}
 
         [github]
-        repository = https://github.com/amirhosein2004/secure-token
+        repository = https://upload.pypi.org/legacy/
         username = __token__
         password = ${{ secrets.GITHUB_TOKEN }}
         EOF
 
         # Upload to GitHub Package Registry
         echo "🚀 Uploading to GitHub Packages Registry..."
-        twine upload --repository-url https://github.com/amirhosein2004/secure-token/packages \
+        twine upload --repository-url https://upload.pypi.org/legacy/ \
           --username __token__ \
           --password ${{ secrets.GITHUB_TOKEN }} \
           dist/* \
@@ -146,7 +146,7 @@ jobs:
 
         echo "✅ Package published to GitHub Packages!"
         echo "📦 GitHub Packages: https://github.com/amirhosein2004/secure-token/packages"
-        echo "📋 Install from GitHub: pip install --index-url https://github.com/amirhosein2004/secure-token/packages secure-token"
+        echo "📋 Install from GitHub: pip install --index-url https://upload.pypi.org/legacy/ secure-token"
 
     - name: Create and push tag
       if: steps.check_tag.outputs.exists == 'false' && steps.check_pypi.outputs.exists == 'false'
