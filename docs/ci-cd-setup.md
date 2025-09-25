@@ -9,6 +9,7 @@ The CI/CD pipeline is configured using **GitHub Actions** and includes the follo
 * Automated testing across multiple Python versions
 * Code coverage reporting
 * Automatic publishing to PyPI
+* Automatic publishing to GitHub Packages
 * Git tagging for releases
 
 ---
@@ -60,7 +61,8 @@ publish:
 5. **Check Tag Existence:** Verifies if the tag already exists
 6. **Build Package:** Builds the Python package
 7. **Publish to PyPI:** Uploads the package to PyPI
-8. **Create Tag:** Creates and pushes a Git tag
+8. **Publish to GitHub Packages:** Uploads the package to GitHub Packages
+9. **Create Tag:** Creates and pushes a Git tag
 
 ---
 
