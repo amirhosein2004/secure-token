@@ -73,23 +73,122 @@ jobs:
           echo "exists=false" >> $GITHUB_OUTPUT
         fi
 
+    - name: Check if package exists on PyPI
+      id: check_pypi
+      run: |
+        VERSION="${{ steps.get_version.outputs.version }}"
+        HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://pypi.org/pypi/secure-token/$VERSION/json")
+        if [ "$HTTP_STATUS" = "200" ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "⚠️ Package version $VERSION already exists on PyPI - skipping publish"
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "✅ Package version $VERSION not found on PyPI - proceeding with publish"
+        fi
+
+    - name: Skip publish - Package already exists
+      if: steps.check_pypi.outputs.exists == 'true'
+      run: |
+        echo "🚫 Skipping PyPI publish: Package version ${{ steps.get_version.outputs.version }} already exists"
+        echo "📦 Existing package: https://pypi.org/project/secure-token/${{ steps.get_version.outputs.version }}/"
+
+    - name: Skip publish - Tag already exists
+      if: steps.check_tag.outputs.exists == 'true'
+      run: |
+        echo "🚫 Skipping publish: Git tag v${{ steps.get_version.outputs.version }} already exists"
+
     - name: Build package
-      if: steps.check_tag.outputs.exists == 'false'
+      if: steps.check_tag.outputs.exists == 'false' && steps.check_pypi.outputs.exists == 'false'
       run: |
         python -m build
 
     - name: Publish to PyPI
-      if: steps.check_tag.outputs.exists == 'false'
+      if: steps.check_tag.outputs.exists == 'false' && steps.check_pypi.outputs.exists == 'false'
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
         twine upload dist/*
 
+    - name: Publish to GitHub Packages
+      if: steps.check_tag.outputs.exists == 'false' && steps.check_pypi.outputs.exists == 'false'
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Configure GitHub Packages
+        echo "📦 Publishing to GitHub Packages..."
+
+        # Create GitHub Packages configuration
+        cat > ~/.pypirc << EOF
+        [distutils]
+        index-servers =
+            pypi
+            github
+
+        [pypi]
+        username = __token__
+        password = ${{ secrets.PYPI_API_TOKEN }}
+
+        [github]
+        repository = https://github.com/amirhosein2004/secure-token
+        username = __token__
+        password = ${{ secrets.GITHUB_TOKEN }}
+        EOF
+
+        # Upload to GitHub Package Registry
+        echo "🚀 Uploading to GitHub Packages Registry..."
+        twine upload --repository-url https://github.com/amirhosein2004/secure-token/packages \
+          --username __token__ \
+          --password ${{ secrets.GITHUB_TOKEN }} \
+          dist/* \
+          --verbose
+
+        echo "✅ Package published to GitHub Packages!"
+        echo "📦 GitHub Packages: https://github.com/amirhosein2004/secure-token/packages"
+        echo "📋 Install from GitHub: pip install --index-url https://github.com/amirhosein2004/secure-token/packages secure-token"
+
     - name: Create and push tag
-      if: steps.check_tag.outputs.exists == 'false'
+      if: steps.check_tag.outputs.exists == 'false' && steps.check_pypi.outputs.exists == 'false'
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git tag -a ${{ steps.get_version.outputs.tag }} -m "Release ${{ steps.get_version.outputs.tag }}"
-        git push origin ${{ steps.get_version.outputs.tag }}
+        git push https://x-access-token:${GITHUB_TOKEN}@github.com/amirhosein2004/secure-token.git ${{ steps.get_version.outputs.tag }}
+
+    - name: Create GitHub Release
+      if: steps.check_tag.outputs.exists == 'false' && steps.check_pypi.outputs.exists == 'false'
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.tag }}
+        name: Release ${{ steps.get_version.outputs.tag }}
+        body: |
+          ## 🚀 Release ${{ steps.get_version.outputs.version }}
+
+          ### 📦 Installation
+
+          **From PyPI:**
+          ```bash
+          pip install secure-token==${{ steps.get_version.outputs.version }}
+          ```
+
+          **From GitHub:**
+          ```bash
+          pip install git+https://github.com/amirhosein2004/secure-token.git@${{ steps.get_version.outputs.tag }}
+          ```
+
+          ### 🔗 Links
+          - 📦 [PyPI Package](https://pypi.org/project/secure-token/${{ steps.get_version.outputs.version }}/)
+          - 📚 [Documentation](https://secure-token.readthedocs.io)
+          - 🐛 [Report Issues](https://github.com/amirhosein2004/secure-token/issues)
+
+          ### 📋 Changelog
+          See [CHANGELOG.md](https://github.com/amirhosein2004/secure-token/blob/main/CHANGELOG.md) for details.
+        files: |
+          dist/*
+        draft: false
+        prerelease: false

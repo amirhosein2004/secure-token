@@ -1,6 +1,7 @@
 # 🔐 Secure Token
 
 [![PyPI version](https://badge.fury.io/py/secure-token.svg)](https://badge.fury.io/py/secure-token)
+[![GitHub release](https://img.shields.io/github/release/amirhosein2004/secure-token.svg)](https://github.com/amirhosein2004/secure-token/releases)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Downloads](https://static.pepy.tech/badge/secure-token)](https://pepy.tech/project/secure-token)
@@ -29,8 +30,25 @@ Perfect for **authentication**, **API security**, **session management**, and **
 
 ## 🚀 Installation
 
+### 📦 From PyPI (Recommended)
 ```bash
 pip install secure-token
+```
+
+### 🐙 From GitHub
+```bash
+# Install latest release
+pip install git+https://github.com/amirhosein2004/secure-token.git
+
+# Install specific version
+pip install git+https://github.com/amirhosein2004/secure-token.git@v1.0.1
+```
+
+### 📋 Development Installation
+```bash
+git clone https://github.com/amirhosein2004/secure-token.git
+cd secure-token
+pip install -e .[dev]
 ```
 
 ## 💡 Quick Start
@@ -373,7 +391,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🔗 Links
 
 - **PyPI Package**: [https://pypi.org/project/secure-token/](https://pypi.org/project/secure-token/)
-- **Source Code**: [https://github.com/amirhosein2004/secure-token](https://github.com/amirhosein2004/secure-token)
+- **GitHub Repository**: [https://github.com/amirhosein2004/secure-token](https://github.com/amirhosein2004/secure-token)
+- **GitHub Releases**: [https://github.com/amirhosein2004/secure-token/releases](https://github.com/amirhosein2004/secure-token/releases)
 - **Documentation**: [https://secure-token.readthedocs.io/en](https://secure-token.readthedocs.io/en/)
 - **Bug Reports**: [https://github.com/amirhosein2004/secure-token/issues](https://github.com/amirhosein2004/secure-token/issues)
 

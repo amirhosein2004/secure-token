@@ -61,6 +61,7 @@ Documentation = "https://secure-token.readthedocs.io"
 Repository = "https://github.com/amirhosein2004/secure-token.git"
 "Bug Tracker" = "https://github.com/amirhosein2004/secure-token/issues"
 Changelog = "https://github.com/amirhosein2004/secure-token/blob/main/CHANGELOG.md"
+"GitHub Packages" = "https://github.com/amirhosein2004/secure-token/packages"
 
 [project.scripts]
 secure-token = "secure_token.cli:main"
