@@ -69,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Technical Details
 - Validation at Settings instantiation 
 - Remove create_settings_instance method
+- Fix CI/CD permissions
 
 ---
 
