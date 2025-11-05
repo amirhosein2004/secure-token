@@ -40,6 +40,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      id-token: write
 
     steps:
     - uses: actions/checkout@v4
@@ -110,12 +113,25 @@ jobs:
       run: |
         twine upload dist/*
 
-    - name: Create and push tag
+    - name: Create GitHub Release
       if: steps.check_tag.outputs.exists == 'false' && steps.check_pypi.outputs.exists == 'false'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.get_version.outputs.tag }}
+        name: Release ${{ steps.get_version.outputs.tag }}
+        body: |
+          ## Changes in version ${{ steps.get_version.outputs.version }}
+          
+          See [CHANGELOG.md](https://github.com/amirhosein2004/secure-token/blob/main/CHANGELOG.md) for details.
+          
+          ### Installation
+          ```bash
+          pip install secure-token==${{ steps.get_version.outputs.version }}
+          ```
+          
+          ### PyPI Package
+          https://pypi.org/project/secure-token/${{ steps.get_version.outputs.version }}/
+        draft: false
+        prerelease: false
       env:
-        GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git tag -a ${{ steps.get_version.outputs.tag }} -m "Release ${{ steps.get_version.outputs.tag }}"
-        git push https://x-access-token:${GITHUB_TOKEN}@github.com/amirhosein2004/secure-token.git ${{ steps.get_version.outputs.tag }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
