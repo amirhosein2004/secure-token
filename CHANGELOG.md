@@ -57,7 +57,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1] - 2025-09-18
 
 ### Changed
-- 📚 **improve docs**
+- 📚 **Improved documentation**
+
+---
+
+## [1.0.2] - 2025-11-05
+
+### Changed
+- 📚 **Improved documentation**
+
+### Technical Details
+- Validation at Settings instantiation 
+- Remove create_settings_instance method
+
+---
 
 ## Future Releases
 

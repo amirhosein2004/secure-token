@@ -4,7 +4,7 @@ Version: 1.0.0
 Author: [Amirhossein Babaee]
 """
 
-from .config import Settings, create_settings_instance
+from .config import Settings
 from .exceptions import InvalidTokenError, PermissionDeniedError, TokenError, TokenExpiredError
 from .token_manager import SecureTokenManager
 from .utils import generate_salt, generate_secret_key
@@ -18,7 +18,6 @@ __all__ = [
     "PermissionDeniedError",
     "validate_permissions",
     "validate_expires_hours",
-    "create_settings_instance",
     "Settings",
     "generate_secret_key",
     "generate_salt",

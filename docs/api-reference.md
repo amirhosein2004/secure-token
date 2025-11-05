@@ -268,33 +268,20 @@ settings = Settings(
 )
 ```
 
-### Utility Function
+**Validation:**
+`Settings` automatically validates all parameters during initialization. If you provide invalid values, it will raise a `TokenError`.
 
-#### create_settings_instance()
-
-Create a settings instance from environment variables.
-
+**Example with validation:**
 ```python
-create_settings_instance() -> Settings
-```
+from secure_token import Settings, TokenError
 
-**Returns:**
-- `Settings`: Settings instance with values from environment variables
+try:
+    settings = Settings(SECRET_KEY="weak")  # Too weak!
+except TokenError as e:
+    print(f"Validation error: {e}")
 
-**Environment Variables:**
-- `SECRET_KEY`: Secret key for encryption
-- `DEFAULT_EXPIRATION_HOURS`: Default expiration time
-- `SALT`: Base64-encoded salt
-
-**Example:**
-```python
-import os
-from secure_token import create_settings_instance
-
-os.environ['SECRET_KEY'] = 'my-secret-key'
-os.environ['DEFAULT_EXPIRATION_HOURS'] = '12'
-
-settings = create_settings_instance()
+# Valid settings
+settings = Settings(SECRET_KEY="MyStrongPassword@123")
 ```
 
 ## Exceptions
