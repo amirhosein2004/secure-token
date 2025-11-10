@@ -668,6 +668,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 - **💻 GitHub**: [github.com/amirhosein2004/secure-token](https://github.com/amirhosein2004/secure-token)
 - **📖 Docs**: [secure-token.readthedocs.io](https://secure-token.readthedocs.io/en/)
 - **🐛 Issues**: [Report Bug](https://github.com/amirhosein2004/secure-token/issues)
+- 💬 Join the discussion here: [GitHub Discussions](https://github.com/amirhosein2004/secure-token/discussions)
 
 ---
 
